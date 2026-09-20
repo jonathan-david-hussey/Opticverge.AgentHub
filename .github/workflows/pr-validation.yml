@@ -1,0 +1,118 @@
+name: PR validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  pull-requests: read
+
+jobs:
+  build-test-analyze:
+    name: Build, test, and analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Restore
+        run: dotnet restore Opticverge.AgentHub.sln
+
+      - name: Build
+        run: dotnet build Opticverge.AgentHub.sln --configuration Release --no-restore
+
+      - name: Test with coverage
+        run: dotnet test Opticverge.AgentHub.sln --configuration Release --no-build --settings coverage.runsettings --collect:"XPlat Code Coverage" --logger trx --results-directory artifacts/test-results
+
+      - name: Coverage report
+        if: always()
+        run: dotnet reportgenerator -reports:artifacts/test-results/**/coverage.opencover.xml -targetdir:artifacts/coverage -reporttypes:"Html;Cobertura;JsonSummary"
+
+      - name: Upload test and coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-and-coverage
+          path: artifacts
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: csharp
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v4
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v4
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Review dependencies
+        uses: actions/dependency-review-action@v5
+
+  sonar:
+    name: SonarQube
+    if: env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != ''
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Sonar begin
+        run: dotnet sonarscanner begin /k:"opticverge-agenthub" /d:sonar.host.url="${{ env.SONAR_HOST_URL }}" /d:sonar.token="${{ env.SONAR_TOKEN }}"
+
+      - name: Build
+        run: dotnet build Opticverge.AgentHub.sln --configuration Release
+
+      - name: Sonar end
+        run: dotnet sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN }}"
