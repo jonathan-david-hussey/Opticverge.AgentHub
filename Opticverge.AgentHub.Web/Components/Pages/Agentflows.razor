@@ -1,0 +1,202 @@
+@page "/agentflows"
+@rendermode InteractiveServer
+
+<PageTitle>Agentflows</PageTitle>
+
+<div class="flow-shell">
+    <aside class="flow-sidebar">
+        <p class="eyebrow">Builder</p>
+        <h1>Agentflows</h1>
+        <div class="flow-tabs" aria-label="Agentflow templates">
+            @foreach (var template in Templates)
+            {
+                <button class="flow-tab @(SelectedTemplate.Id == template.Id ? "active" : null)" type="button" @onclick="() => SelectTemplate(template.Id)">
+                    <span>@template.Name</span>
+                    <small>@template.Description</small>
+                </button>
+            }
+        </div>
+    </aside>
+
+    <section class="flow-workspace">
+        <div class="flow-toolbar">
+            <div>
+                <p class="eyebrow">@SelectedTemplate.AgentId</p>
+                <h2>@SelectedTemplate.Name</h2>
+            </div>
+            <div class="flow-toolbar-actions">
+                <span>@SelectedTemplate.Status</span>
+                <span>@SelectedTemplate.EstimatedCost</span>
+            </div>
+        </div>
+
+        <div class="flow-canvas" aria-label="@SelectedTemplate.Name agentflow canvas">
+            <svg class="flow-edges" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
+                @foreach (var edge in SelectedTemplate.Edges)
+                {
+                    var from = SelectedTemplate.Nodes.Single(node => node.Id == edge.From);
+                    var to = SelectedTemplate.Nodes.Single(node => node.Id == edge.To);
+                    <path d="@BuildEdge(from, to)" />
+                }
+            </svg>
+
+            @foreach (var node in SelectedTemplate.Nodes)
+            {
+                <button class="flow-node @(SelectedNode.Id == node.Id ? "active" : null)" style="@NodeStyle(node)" type="button" @onclick="() => SelectNode(node.Id)">
+                    <small>@node.Kind</small>
+                    <strong>@node.Title</strong>
+                    <span>@node.Summary</span>
+                </button>
+            }
+        </div>
+    </section>
+
+    <aside class="flow-inspector">
+        <p class="eyebrow">Inspector</p>
+        <h2>@SelectedNode.Title</h2>
+        <p>@SelectedNode.Detail</p>
+        <div class="detail-grid inspector-grid">
+            <div>
+                <strong>Node</strong>
+                <span>@SelectedNode.Kind</span>
+            </div>
+            <div>
+                <strong>Policy</strong>
+                <span>@SelectedNode.Policy</span>
+            </div>
+            <div>
+                <strong>Evidence</strong>
+                <span>@SelectedNode.Evidence</span>
+            </div>
+            <div>
+                <strong>Output</strong>
+                <span>@SelectedNode.Output</span>
+            </div>
+        </div>
+    </aside>
+</div>
+
+@code {
+    private IReadOnlyList<FlowTemplate> Templates { get; } =
+    [
+        new(
+            "pr-reviewer",
+            "pr-reviewer",
+            "PR Reviewer",
+            "Reviews changes, records evidence, and raises review findings.",
+            "available",
+            "$0.005 / 1k tokens",
+            [
+                new("trigger", "Trigger", "Pull request opened", "GitHub PR event", "Receives a PR event from CI or an MCP tool invocation.", "agenthub.run-agents", "correlation id", "agent-run-requested", 70, 90),
+                new("policy", "Policy", "Access and scope gate", "RBAC + repo rules", "Checks caller role, repository scope, and whether PR review agent is enabled.", "agenthub.run-agents", "policy decision", "provider-routing-decision-recorded", 310, 90),
+                new("router", "Router", "Provider router", "OpenAI, GitHub Models, Ollama", "Chooses a provider from health, score, cost, and capability evidence.", "agenthub.run-agents", "routing reason", "provider-routing-decision-recorded", 550, 90),
+                new("tools", "Tools", "Code review tools", "Diff, tests, ownership", "Collects diff metadata, build status, test evidence, and affected ownership.", "agenthub.run-agents", "tool audit", "mcp-tool-invoked", 310, 275),
+                new("evaluation", "Evaluation", "Review quality gate", "Policy and hallucination checks", "Scores output against deterministic and policy evaluators before publishing.", "agenthub.view-cost-data", "evaluation result", "evaluation-case-completed", 550, 275),
+                new("notify", "Notify", "Review summary", "PR comment + dashboard", "Publishes findings, cost, and trace links to the dashboard and review channel.", "agenthub.run-agents", "trace id", "notification-requested", 790, 275)
+            ],
+            [
+                new("trigger", "policy"),
+                new("policy", "router"),
+                new("router", "tools"),
+                new("tools", "evaluation"),
+                new("evaluation", "notify")
+            ]),
+        new(
+            "readiness-scanner",
+            "readiness-scanner",
+            "Readiness Scanner",
+            "Scores whether a codebase is ready for AI-assisted engineering.",
+            "available",
+            "$0.000 deterministic",
+            [
+                new("trigger", "Trigger", "Repository selected", "Manual or scheduled scan", "Starts a readiness scan for a repository.", "agenthub.run-agents", "repository id", "readiness-scan-requested", 70, 90),
+                new("checks", "Checks", "Engineering signals", "Build, tests, CI, secrets, telemetry", "Collects deterministic signals from repository structure and runtime config.", "agenthub.run-agents", "check evidence", "readiness-recommendation-recorded", 310, 90),
+                new("score", "Score", "Evidence-backed score", "Weighted readiness model", "Turns checks into a decomposable score and recommendations.", "agenthub.run-agents", "score breakdown", "readiness-recommendation-recorded", 550, 90),
+                new("history", "Persist", "Trend history", "PostgreSQL read model", "Stores score history so teams can see whether readiness improves.", "agenthub.view-cost-data", "score trend", "verification-evidence-recorded", 550, 275),
+                new("dashboard", "Dashboard", "Portfolio evidence", "Hub metric", "Displays readiness score, evidence, and recommendations in the hub.", "agenthub.view-cost-data", "dashboard card", "notification-requested", 790, 275)
+            ],
+            [
+                new("trigger", "checks"),
+                new("checks", "score"),
+                new("score", "history"),
+                new("history", "dashboard")
+            ]),
+        new(
+            "provider-comparison",
+            "provider-comparison",
+            "Provider Comparison",
+            "Runs a shared dataset across providers and compares quality, cost, and latency.",
+            "experimental",
+            "requires provider credentials",
+            [
+                new("dataset", "Dataset", "Evaluation dataset", "Versioned cases", "Loads the controlled dataset used for provider comparison.", "agenthub.view-cost-data", "dataset version", "evaluation-run-requested", 70, 90),
+                new("providers", "Fan out", "Provider matrix", "OpenAI, GitHub Models, Ollama", "Runs the same cases across enabled providers.", "agenthub.view-cost-data", "provider list", "provider-routing-decision-recorded", 310, 90),
+                new("evaluate", "Evaluate", "Quality and policy", "Exact, tool, policy, semantic", "Scores task success, tool correctness, policy compliance, latency, and cost.", "agenthub.view-cost-data", "metric set", "evaluation-case-completed", 550, 90),
+                new("compare", "Compare", "Build-vs-buy evidence", "Trade-off report", "Compares quality, cost, reliability, complexity, lock-in, and data residency.", "agenthub.view-cost-data", "comparison", "provider-benchmark-completed", 550, 275),
+                new("gate", "Gate", "Regression policy", "CI threshold", "Blocks regressions when configured baseline policies are missed.", "agenthub.view-cost-data", "baseline verdict", "evaluation-run-completed", 790, 275)
+            ],
+            [
+                new("dataset", "providers"),
+                new("providers", "evaluate"),
+                new("evaluate", "compare"),
+                new("compare", "gate")
+            ])
+    ];
+
+    private FlowTemplate SelectedTemplate { get; set; } = default!;
+
+    private FlowNode SelectedNode { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        SelectedTemplate = Templates[0];
+        SelectedNode = SelectedTemplate.Nodes[0];
+    }
+
+    private void SelectTemplate(string templateId)
+    {
+        SelectedTemplate = Templates.Single(template => template.Id == templateId);
+        SelectedNode = SelectedTemplate.Nodes[0];
+    }
+
+    private void SelectNode(string nodeId)
+    {
+        SelectedNode = SelectedTemplate.Nodes.Single(node => node.Id == nodeId);
+    }
+
+    private static string NodeStyle(FlowNode node) => $"left: {node.X}px; top: {node.Y}px;";
+
+    private static string BuildEdge(FlowNode from, FlowNode to)
+    {
+        var startX = from.X + 170;
+        var startY = from.Y + 58;
+        var endX = to.X;
+        var endY = to.Y + 58;
+        var midX = (startX + endX) / 2;
+        return $"M {startX} {startY} C {midX} {startY}, {midX} {endY}, {endX} {endY}";
+    }
+
+    private sealed record FlowTemplate(
+        string Id,
+        string AgentId,
+        string Name,
+        string Description,
+        string Status,
+        string EstimatedCost,
+        IReadOnlyList<FlowNode> Nodes,
+        IReadOnlyList<FlowEdge> Edges);
+
+    private sealed record FlowNode(
+        string Id,
+        string Kind,
+        string Title,
+        string Summary,
+        string Detail,
+        string Policy,
+        string Evidence,
+        string Output,
+        int X,
+        int Y);
+
+    private sealed record FlowEdge(string From, string To);
+}

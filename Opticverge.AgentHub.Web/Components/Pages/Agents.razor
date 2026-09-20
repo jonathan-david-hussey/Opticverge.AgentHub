@@ -1,0 +1,101 @@
+@page "/agents"
+@using Opticverge.AgentHub.Application.Agents
+@using Opticverge.AgentHub.Application.Providers
+@using Opticverge.AgentHub.Domain.Agents
+@inject IAgentRegistry AgentRegistry
+@inject IProviderCatalog ProviderCatalog
+
+<PageTitle>Agents</PageTitle>
+
+<div class="evidence-header">
+    <div>
+        <p class="eyebrow">AgentHub</p>
+        <h1>Agents</h1>
+        <p class="lede">Browse registered agents, inspect their policies and provider fit, and see the secured API and MCP contracts used to run them.</p>
+    </div>
+    <div class="score">
+        <span>@RegisteredAgents.Count</span>
+        <small>registered agents</small>
+    </div>
+</div>
+
+<section class="agent-hub">
+    <div class="agent-list" aria-label="Registered agents">
+        @foreach (var agent in RegisteredAgents)
+        {
+            <a class="agent-button @(SelectedAgent.Id == agent.Id ? "active" : null)" href="@($"/agents?selected={agent.Id}")">
+                <span>@agent.DisplayName</span>
+                <small>@agent.Capability</small>
+            </a>
+        }
+    </div>
+
+    <article class="agent-detail">
+        <div class="agent-detail-header">
+            <div>
+                <p class="eyebrow">@SelectedAgent.Id</p>
+                <h2>@SelectedAgent.DisplayName</h2>
+                <p>@SelectedAgent.Description</p>
+            </div>
+            <span class="status-pill">@(SelectedAgent.IsExperimental ? "experimental" : "available")</span>
+        </div>
+
+        <div class="detail-grid">
+            <div>
+                <strong>Capability</strong>
+                <span>@SelectedAgent.Capability</span>
+            </div>
+            <div>
+                <strong>Policies</strong>
+                <span>@string.Join(", ", SelectedAgent.RequiredPolicies)</span>
+            </div>
+            <div>
+                <strong>API</strong>
+                <span>POST /api/agent-runs</span>
+            </div>
+            <div>
+                <strong>MCP tool</strong>
+                <span>run_agent</span>
+            </div>
+        </div>
+
+        <h3>Provider fit</h3>
+        <div class="rows">
+            @foreach (var provider in CandidateProviders)
+            {
+                <article class="row">
+                    <div>
+                        <strong>@provider.DisplayName</strong>
+                        <p>@provider.Kind &middot; score @provider.EvaluationScore.ToString("0.00") &middot; $@provider.EstimatedCostPerThousandTokensUsd.ToString("0.###") / 1k tokens</p>
+                    </div>
+                    <span>@(provider.IsHealthy ? "healthy" : "down")</span>
+                </article>
+            }
+        </div>
+
+        <h3>Request shape</h3>
+        <pre class="request-shape"><code>{
+  "agentId": "@SelectedAgent.Id",
+  "requestedBy": "&lt;authenticated-user&gt;"
+}</code></pre>
+    </article>
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "selected")]
+    private string? SelectedAgentId { get; set; }
+
+    private IReadOnlyList<AgentDefinition> RegisteredAgents => AgentRegistry.ListAgents();
+
+    private AgentDefinition SelectedAgent =>
+        AgentRegistry.GetAgent(SelectedAgentId ?? string.Empty) ?? RegisteredAgents[0];
+
+    private IReadOnlyList<Opticverge.AgentHub.Domain.Providers.ProviderProfile> CandidateProviders =>
+        ProviderCatalog
+            .ListProviders()
+            .Where(provider => provider.Capabilities.Contains(SelectedAgent.Capability))
+            .OrderByDescending(provider => provider.IsHealthy)
+            .ThenByDescending(provider => provider.EvaluationScore)
+            .ThenBy(provider => provider.EstimatedCostPerThousandTokensUsd)
+            .ToArray();
+}

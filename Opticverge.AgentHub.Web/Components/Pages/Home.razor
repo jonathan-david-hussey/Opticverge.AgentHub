@@ -1,0 +1,99 @@
+﻿@page "/"
+@using Opticverge.AgentHub.Application.Agents
+@using Opticverge.AgentHub.Application.Providers
+@using Opticverge.AgentHub.Application.Readiness
+@using Opticverge.AgentHub.Domain.Readiness
+@inject IAgentRegistry AgentRegistry
+@inject IProviderCatalog ProviderCatalog
+@inject ReadinessService ReadinessService
+
+<PageTitle>AgentHub Evidence</PageTitle>
+
+<div class="evidence-header">
+    <div>
+        <p class="eyebrow">Opticverge.AgentHub</p>
+        <h1>AI engineering evidence</h1>
+        <p class="lede">A portfolio platform for provider-neutral agents, evaluation gates, runtime diagnostics, controlled rollout, and measurable AI readiness.</p>
+    </div>
+    <div class="score">
+        <span>@Readiness.Score</span>
+        <small>readiness score</small>
+    </div>
+</div>
+
+<section class="metric-grid" aria-label="Portfolio metrics">
+    <div class="metric">
+        <span>@Agents.Count</span>
+        <strong>registered agents</strong>
+    </div>
+    <div class="metric">
+        <span>@Providers.Count</span>
+        <strong>providers routed</strong>
+    </div>
+    <div class="metric">
+        <span>@Providers.Count(provider => provider.IsHealthy)</span>
+        <strong>healthy providers</strong>
+    </div>
+    <div class="metric">
+        <span>@Readiness.Checks.Count(check => check.Status is ReadinessCheckStatus.Passed)</span>
+        <strong>passed checks</strong>
+    </div>
+</section>
+
+<section class="split">
+    <div>
+        <h2>Agents</h2>
+        <p class="section-note"><a href="agents">Open the agent hub</a> &middot; <a href="agentflows">Open the visual builder</a></p>
+        <div class="rows">
+            @foreach (var agent in Agents)
+            {
+                <article class="row">
+                    <div>
+                        <strong>@agent.DisplayName</strong>
+                        <p>@agent.Description</p>
+                    </div>
+                    <span>@agent.Capability</span>
+                </article>
+            }
+        </div>
+    </div>
+    <div>
+        <h2>Provider routing</h2>
+        <div class="rows">
+            @foreach (var provider in Providers)
+            {
+                <article class="row">
+                    <div>
+                        <strong>@provider.DisplayName</strong>
+                        <p>@provider.Kind &middot; score @provider.EvaluationScore.ToString("0.00") &middot; $@provider.EstimatedCostPerThousandTokensUsd.ToString("0.###") / 1k tokens</p>
+                    </div>
+                    <span>@(provider.IsHealthy ? "healthy" : "down")</span>
+                </article>
+            }
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Readiness evidence</h2>
+    <div class="rows">
+        @foreach (var check in Readiness.Checks)
+        {
+            <article class="row">
+                <div>
+                    <strong>@check.Name</strong>
+                    <p>@check.Evidence</p>
+                </div>
+                <span>@check.Status</span>
+            </article>
+        }
+    </div>
+</section>
+
+@code {
+    private IReadOnlyList<Opticverge.AgentHub.Domain.Agents.AgentDefinition> Agents => AgentRegistry.ListAgents();
+
+    private IReadOnlyList<Opticverge.AgentHub.Domain.Providers.ProviderProfile> Providers => ProviderCatalog.ListProviders();
+
+    private Opticverge.AgentHub.Domain.Readiness.ReadinessSummary Readiness => ReadinessService.SummarizeRepository("Opticverge.AgentHub");
+}
