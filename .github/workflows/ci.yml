@@ -90,6 +90,7 @@ jobs:
 
   codeql:
     name: CodeQL
+    if: ${{ github.event.repository.private == false || vars.ENABLE_CODEQL == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
