@@ -1,0 +1,24 @@
+{
+  "title": "AgentHub Overview",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "title": "Agent runs started",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "agenthub_agent_runs_started"
+        }
+      ]
+    },
+    {
+      "title": "Evaluation runs",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "agenthub_evaluation_runs"
+        }
+      ]
+    }
+  ]
+}

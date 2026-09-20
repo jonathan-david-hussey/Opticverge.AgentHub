@@ -1,0 +1,15 @@
+{
+  "$schema": "https://flagd.dev/schema/v0/flags.json",
+  "flags": {
+    "agents.invoice-assistant.enabled": { "state": "DISABLED", "defaultVariant": "off", "variants": { "on": true, "off": false } },
+    "agents.pr-reviewer.enabled": { "state": "ENABLED", "defaultVariant": "on", "variants": { "on": true, "off": false } },
+    "providers.openai.enabled": { "state": "ENABLED", "defaultVariant": "on", "variants": { "on": true, "off": false } },
+    "providers.github-models.enabled": { "state": "ENABLED", "defaultVariant": "on", "variants": { "on": true, "off": false } },
+    "providers.ollama.enabled": { "state": "ENABLED", "defaultVariant": "on", "variants": { "on": true, "off": false } },
+    "routing.cost-optimised.enabled": { "state": "DISABLED", "defaultVariant": "off", "variants": { "on": true, "off": false } },
+    "routing.fallback.enabled": { "state": "ENABLED", "defaultVariant": "on", "variants": { "on": true, "off": false } },
+    "verification.llm-judge.enabled": { "state": "DISABLED", "defaultVariant": "off", "variants": { "on": true, "off": false } },
+    "evaluation.ci-blocking.enabled": { "state": "ENABLED", "defaultVariant": "on", "variants": { "on": true, "off": false } },
+    "mcp.replay-tool.enabled": { "state": "DISABLED", "defaultVariant": "off", "variants": { "on": true, "off": false } }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "portfolio-smoke",
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "readiness-summary",
+      "prompt": "Summarize whether this repository is ready for AI-assisted engineering.",
+      "expectedText": "Repository has build, tests, boundaries, telemetry, and externalized secrets.",
+      "expectedToolCalls": [],
+      "forbiddenToolNames": [ "replay_agent_run" ],
+      "requiredPolicies": []
+    }
+  ]
+}

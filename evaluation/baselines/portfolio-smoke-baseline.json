@@ -1,0 +1,9 @@
+{
+  "datasetId": "portfolio-smoke",
+  "datasetVersion": "1.0.0",
+  "minimumTaskSuccessRate": 1.0,
+  "minimumToolAccuracy": 1.0,
+  "maximumPolicyFailures": 0,
+  "maximumCostIncreaseUsd": 0.01,
+  "maximumP95Latency": "00:00:00.5000000"
+}
