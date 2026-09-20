@@ -1,0 +1,27 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.5.4">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>2d725f0b-3e2a-4f76-baec-de0a3f127b98</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Kafka" Version="13.5.4" />
+    <PackageReference Include="Aspire.Hosting.Keycloak" Version="13.5.4-preview.1.26464.4" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.5.4" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="13.5.4" />
+    <PackageReference Include="Aspire.Hosting.Seq" Version="13.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Opticverge.AgentHub.Api\Opticverge.AgentHub.Api.csproj" />
+    <ProjectReference Include="..\Opticverge.AgentHub.Web\Opticverge.AgentHub.Web.csproj" />
+    <ProjectReference Include="..\Opticverge.AgentHub.Worker\Opticverge.AgentHub.Worker.csproj" />
+    <ProjectReference Include="..\Opticverge.AgentHub.Mcp\Opticverge.AgentHub.Mcp.csproj" />
+  </ItemGroup>
+
+</Project>
