@@ -24,5 +24,8 @@ public sealed class AgentHubMetrics : IDisposable
 
     public Counter<long> McpToolInvocations { get; }
 
-    public void Dispose() => _meter.Dispose();
+    public void Dispose()
+    {
+        _meter.Dispose();
+    }
 }

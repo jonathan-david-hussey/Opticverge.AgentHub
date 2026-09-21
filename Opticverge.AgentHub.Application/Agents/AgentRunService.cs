@@ -10,16 +10,10 @@ public sealed class AgentRunService(IAgentRegistry registry, IProviderRouter pro
     public AgentRunRequestResult RequestRun(string agentId, string requestedBy)
     {
         var agent = registry.GetAgent(agentId);
-        if (agent is null)
-        {
-            return AgentRunRequestResult.NotFound(agentId);
-        }
+        if (agent is null) return AgentRunRequestResult.NotFound(agentId);
 
         var routing = providerRouter.SelectProvider(agent);
-        if (routing is null)
-        {
-            return AgentRunRequestResult.NoProvider(agentId);
-        }
+        if (routing is null) return AgentRunRequestResult.NoProvider(agentId);
 
         var now = timeProvider.GetUtcNow();
         var run = new AgentRun(
@@ -59,12 +53,18 @@ public sealed record AgentRunRequestResult(
     public static AgentRunRequestResult Success(
         AgentRun run,
         EventEnvelope<AgentRun> envelope,
-        ProviderRoutingDecision routingDecision) =>
-        new(true, null, run, envelope, routingDecision);
+        ProviderRoutingDecision routingDecision)
+    {
+        return new AgentRunRequestResult(true, null, run, envelope, routingDecision);
+    }
 
-    public static AgentRunRequestResult NotFound(string agentId) =>
-        new(false, $"Agent '{agentId}' was not found.", null, null, null);
+    public static AgentRunRequestResult NotFound(string agentId)
+    {
+        return new AgentRunRequestResult(false, $"Agent '{agentId}' was not found.", null, null, null);
+    }
 
-    public static AgentRunRequestResult NoProvider(string agentId) =>
-        new(false, $"No enabled healthy provider can run agent '{agentId}'.", null, null, null);
+    public static AgentRunRequestResult NoProvider(string agentId)
+    {
+        return new AgentRunRequestResult(false, $"No enabled healthy provider can run agent '{agentId}'.", null, null, null);
+    }
 }

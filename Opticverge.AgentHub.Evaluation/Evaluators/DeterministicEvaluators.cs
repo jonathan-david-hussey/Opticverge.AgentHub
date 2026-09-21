@@ -17,10 +17,7 @@ public sealed class DeterministicEvaluationScorer : IEvaluationScorer
             candidate.ActualText.Trim(),
             StringComparison.OrdinalIgnoreCase);
 
-        if (!textMatches)
-        {
-            findings.Add("Expected text did not match candidate output.");
-        }
+        if (!textMatches) findings.Add("Expected text did not match candidate output.");
 
         var expectedCalls = evaluationCase.ExpectedToolCalls;
         var matchingCalls = expectedCalls.Count(expected =>
@@ -36,23 +33,14 @@ public sealed class DeterministicEvaluationScorer : IEvaluationScorer
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var forbiddenCall in forbiddenCalls)
-        {
-            findings.Add($"Forbidden tool call '{forbiddenCall}' was used.");
-        }
+        foreach (var forbiddenCall in forbiddenCalls) findings.Add($"Forbidden tool call '{forbiddenCall}' was used.");
 
         var toolAccuracy = expectedCalls.Count == 0 ? 1 : matchingCalls / (double)expectedCalls.Count;
         var policyFailures = candidate.PolicyViolations.Count;
-        if (policyFailures > 0)
-        {
-            findings.Add($"{policyFailures} policy violation(s) were reported.");
-        }
+        if (policyFailures > 0) findings.Add($"{policyFailures} policy violation(s) were reported.");
 
         var success = textMatches && toolAccuracy >= 1 && forbiddenCalls.Length == 0 && policyFailures == 0;
-        if (success)
-        {
-            findings.Add("Case passed deterministic checks.");
-        }
+        if (success) findings.Add("Case passed deterministic checks.");
 
         return new EvaluationCaseResult(
             evaluationCase.Id,

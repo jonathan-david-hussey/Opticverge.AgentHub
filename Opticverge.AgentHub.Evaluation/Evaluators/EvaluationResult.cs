@@ -18,10 +18,7 @@ public sealed record EvaluationRunResult(
 
     private static TimeSpan Percentile(TimeSpan[] values, double percentile)
     {
-        if (values.Length == 0)
-        {
-            return TimeSpan.Zero;
-        }
+        if (values.Length == 0) return TimeSpan.Zero;
 
         var index = (int)Math.Ceiling(percentile * values.Length) - 1;
         return values[Math.Clamp(index, 0, values.Length - 1)];

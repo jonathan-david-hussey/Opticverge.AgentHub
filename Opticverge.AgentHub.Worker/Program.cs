@@ -1,7 +1,7 @@
-using Opticverge.AgentHub.Worker;
 using Opticverge.AgentHub.Application;
 using Opticverge.AgentHub.Evaluation;
 using Opticverge.AgentHub.Infrastructure;
+using Opticverge.AgentHub.Worker;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.AddServiceDefaults();

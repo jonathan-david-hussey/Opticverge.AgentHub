@@ -27,13 +27,23 @@ public sealed class McpToolCatalog
         new("replay_agent_run", "Replay an agent run from event history.", AgentHubPolicies.ReplayEvents, true, IdSchema("runId"))
     ];
 
-    public IReadOnlyList<McpToolDescriptor> ListTools() => Tools;
+    public IReadOnlyList<McpToolDescriptor> ListTools()
+    {
+        return Tools;
+    }
 
-    public McpToolDescriptor? GetTool(string name) =>
-        Tools.FirstOrDefault(tool => string.Equals(tool.Name, name, StringComparison.OrdinalIgnoreCase));
+    public McpToolDescriptor? GetTool(string name)
+    {
+        return Tools.FirstOrDefault(tool => string.Equals(tool.Name, name, StringComparison.OrdinalIgnoreCase));
+    }
 
-    private static IReadOnlyDictionary<string, string> EmptySchema() => new Dictionary<string, string>();
+    private static IReadOnlyDictionary<string, string> EmptySchema()
+    {
+        return new Dictionary<string, string>();
+    }
 
-    private static IReadOnlyDictionary<string, string> IdSchema(string propertyName) =>
-        new Dictionary<string, string> { [propertyName] = "string" };
+    private static IReadOnlyDictionary<string, string> IdSchema(string propertyName)
+    {
+        return new Dictionary<string, string> { [propertyName] = "string" };
+    }
 }

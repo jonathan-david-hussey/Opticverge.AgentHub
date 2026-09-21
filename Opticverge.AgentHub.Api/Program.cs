@@ -40,19 +40,11 @@ builder.Services.AddAuthorizationBuilder()
 var signalR = builder.Services.AddSignalR();
 var redisConnection = builder.Configuration.GetConnectionString(CachePlan.RedisResourceName);
 if (!string.IsNullOrWhiteSpace(redisConnection))
-{
-    signalR.AddStackExchangeRedis(redisConnection, options =>
-    {
-        options.Configuration.ChannelPrefix = RedisChannel.Literal(CachePlan.SignalRChannelPrefix);
-    });
-}
+    signalR.AddStackExchangeRedis(redisConnection, options => { options.Configuration.ChannelPrefix = RedisChannel.Literal(CachePlan.SignalRChannelPrefix); });
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -78,29 +70,26 @@ app.MapGet("/api/agents", (IAgentRegistry registry) => registry.ListAgents())
     .WithName("ListAgents");
 
 app.MapGet("/api/agents/{agentId}", (string agentId, IAgentRegistry registry) =>
-    registry.GetAgent(agentId) is { } agent ? Results.Ok(agent) : Results.NotFound())
+        registry.GetAgent(agentId) is { } agent ? Results.Ok(agent) : Results.NotFound())
     .RequireAuthorization(AgentHubPolicies.RunAgents)
     .WithName("GetAgent");
 
 app.MapPost("/api/agent-runs", async (
-    AgentRunRequest request,
-    AgentRunService runs,
-    AgentHubMetrics metrics,
-    IHubContext<AgentRunsHub> hub,
-    CancellationToken cancellationToken) =>
-{
-    var result = runs.RequestRun(request.AgentId, request.RequestedBy);
-    if (!result.Accepted || result.Run is null)
+        AgentRunRequest request,
+        AgentRunService runs,
+        AgentHubMetrics metrics,
+        IHubContext<AgentRunsHub> hub,
+        CancellationToken cancellationToken) =>
     {
-        return Results.BadRequest(new { result.Error });
-    }
+        var result = runs.RequestRun(request.AgentId, request.RequestedBy);
+        if (!result.Accepted || result.Run is null) return Results.BadRequest(new { result.Error });
 
-    metrics.AgentRunsStarted.Add(1, KeyValuePair.Create<string, object?>("agent.id", result.Run.AgentId));
-    metrics.ProviderRoutingDecisions.Add(1, KeyValuePair.Create<string, object?>("provider.id", result.Run.ProviderId));
+        metrics.AgentRunsStarted.Add(1, KeyValuePair.Create<string, object?>("agent.id", result.Run.AgentId));
+        metrics.ProviderRoutingDecisions.Add(1, KeyValuePair.Create<string, object?>("provider.id", result.Run.ProviderId));
 
-    await hub.Clients.Group("agent-runs").SendAsync("agentRunRequested", result.Run, cancellationToken);
-    return Results.Accepted($"/api/agent-runs/{result.Run.RunId}", result);
-})
+        await hub.Clients.Group("agent-runs").SendAsync("agentRunRequested", result.Run, cancellationToken);
+        return Results.Accepted($"/api/agent-runs/{result.Run.RunId}", result);
+    })
     .RequireAuthorization(AgentHubPolicies.RunAgents)
     .WithName("RequestAgentRun");
 
@@ -113,16 +102,16 @@ app.MapGet("/api/readiness", (ReadinessService readiness) => readiness.Summarize
     .WithName("GetReadinessSummary");
 
 app.MapPost("/api/evaluations/deterministic", (
-    EvaluationRequest request,
-    EvaluationRunner runner,
-    BaselineComparer comparer,
-    AgentHubMetrics metrics) =>
-{
-    var result = runner.Run(request.Dataset, request.Candidates);
-    var comparison = comparer.Compare(request.Baseline, result);
-    metrics.EvaluationRuns.Add(1, KeyValuePair.Create<string, object?>("dataset.id", request.Dataset.Id));
-    return Results.Ok(new { result, comparison });
-})
+        EvaluationRequest request,
+        EvaluationRunner runner,
+        BaselineComparer comparer,
+        AgentHubMetrics metrics) =>
+    {
+        var result = runner.Run(request.Dataset, request.Candidates);
+        var comparison = comparer.Compare(request.Baseline, result);
+        metrics.EvaluationRuns.Add(1, KeyValuePair.Create<string, object?>("dataset.id", request.Dataset.Id));
+        return Results.Ok(new { result, comparison });
+    })
     .RequireAuthorization(AgentHubPolicies.ViewCostData)
     .WithName("RunDeterministicEvaluation");
 

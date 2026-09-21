@@ -1,4 +1,3 @@
-using Opticverge.AgentHub.Application.Agents;
 using Opticverge.AgentHub.Application.Providers;
 using Opticverge.AgentHub.Domain.Agents;
 using Opticverge.AgentHub.Domain.Providers;
@@ -22,11 +21,14 @@ public sealed class ProviderRouterTests
 
     private sealed class TestProviderCatalog : IProviderCatalog
     {
-        public IReadOnlyList<ProviderProfile> ListProviders() =>
-        [
-            new("cheap", "Cheap", ProviderKind.Ollama, true, true, 0m, 0.7, new HashSet<AgentCapability> { AgentCapability.CodeReview }),
-            new("down", "Down", ProviderKind.OpenAi, true, false, 0.01m, 1, new HashSet<AgentCapability> { AgentCapability.CodeReview }),
-            new("best", "Best", ProviderKind.GitHubModels, true, true, 0.01m, 0.95, new HashSet<AgentCapability> { AgentCapability.CodeReview })
-        ];
+        public IReadOnlyList<ProviderProfile> ListProviders()
+        {
+            return
+            [
+                new("cheap", "Cheap", ProviderKind.Ollama, true, true, 0m, 0.7, new HashSet<AgentCapability> { AgentCapability.CodeReview }),
+                new("down", "Down", ProviderKind.OpenAi, true, false, 0.01m, 1, new HashSet<AgentCapability> { AgentCapability.CodeReview }),
+                new("best", "Best", ProviderKind.GitHubModels, true, true, 0.01m, 0.95, new HashSet<AgentCapability> { AgentCapability.CodeReview })
+            ];
+        }
     }
 }

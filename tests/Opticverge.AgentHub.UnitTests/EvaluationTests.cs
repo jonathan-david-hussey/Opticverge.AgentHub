@@ -12,7 +12,7 @@ public sealed class EvaluationTests
             "demo",
             "1.0",
             [
-                new(
+                new EvaluationCase(
                     "case-1",
                     "Prompt",
                     "Expected",

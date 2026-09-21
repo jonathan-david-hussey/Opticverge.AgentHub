@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <ItemGroup>
-    <ProjectReference Include="..\Opticverge.AgentHub.ServiceDefaults\Opticverge.AgentHub.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\Opticverge.AgentHub.Application\Opticverge.AgentHub.Application.csproj" />
-    <ProjectReference Include="..\Opticverge.AgentHub.Infrastructure\Opticverge.AgentHub.Infrastructure.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Opticverge.AgentHub.ServiceDefaults\Opticverge.AgentHub.ServiceDefaults.csproj"/>
+        <ProjectReference Include="..\Opticverge.AgentHub.Application\Opticverge.AgentHub.Application.csproj"/>
+        <ProjectReference Include="..\Opticverge.AgentHub.Infrastructure\Opticverge.AgentHub.Infrastructure.csproj"/>
+    </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
 
 </Project>

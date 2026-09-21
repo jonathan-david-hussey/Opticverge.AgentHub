@@ -29,10 +29,7 @@ builder.Services.AddAuthorizationBuilder()
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -52,27 +49,24 @@ app.MapGet("/mcp/tools", (McpToolCatalog catalog) => catalog.ListTools())
     .WithName("ListMcpTools");
 
 app.MapPost("/mcp/tools/{toolName}/invoke", (
-    string toolName,
-    McpInvocationRequest request,
-    McpToolCatalog catalog,
-    AgentHubMetrics metrics) =>
-{
-    var tool = catalog.GetTool(toolName);
-    if (tool is null)
+        string toolName,
+        McpInvocationRequest request,
+        McpToolCatalog catalog,
+        AgentHubMetrics metrics) =>
     {
-        return Results.NotFound(new { error = $"MCP tool '{toolName}' was not found." });
-    }
+        var tool = catalog.GetTool(toolName);
+        if (tool is null) return Results.NotFound(new { error = $"MCP tool '{toolName}' was not found." });
 
-    metrics.McpToolInvocations.Add(1, KeyValuePair.Create<string, object?>("mcp.tool", tool.Name));
-    return Results.Accepted($"/mcp/audit/{request.CorrelationId}", new
-    {
-        tool = tool.Name,
-        tool.RequiredPolicy,
-        request.CorrelationId,
-        request.IdempotencyKey,
-        status = "accepted-for-audit"
-    });
-})
+        metrics.McpToolInvocations.Add(1, KeyValuePair.Create<string, object?>("mcp.tool", tool.Name));
+        return Results.Accepted($"/mcp/audit/{request.CorrelationId}", new
+        {
+            tool = tool.Name,
+            tool.RequiredPolicy,
+            request.CorrelationId,
+            request.IdempotencyKey,
+            status = "accepted-for-audit"
+        });
+    })
     .RequireAuthorization(AgentHubPolicies.InvokePrivilegedMcpTools)
     .WithName("InvokeMcpTool");
 

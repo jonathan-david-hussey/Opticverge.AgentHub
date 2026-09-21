@@ -68,5 +68,8 @@ public sealed class InMemoryProviderCatalog : IProviderCatalog
             })
     ];
 
-    public IReadOnlyList<ProviderProfile> ListProviders() => Providers;
+    public IReadOnlyList<ProviderProfile> ListProviders()
+    {
+        return Providers;
+    }
 }

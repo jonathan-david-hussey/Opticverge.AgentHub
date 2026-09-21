@@ -36,13 +36,14 @@
                 {
                     var from = SelectedTemplate.Nodes.Single(node => node.Id == edge.From);
                     var to = SelectedTemplate.Nodes.Single(node => node.Id == edge.To);
-                    <path d="@BuildEdge(from, to)" />
+                    <path d="@BuildEdge(from, to)"/>
                 }
             </svg>
 
             @foreach (var node in SelectedTemplate.Nodes)
             {
-                <button class="flow-node @(SelectedNode.Id == node.Id ? "active" : null)" style="@NodeStyle(node)" type="button" @onclick="() => SelectNode(node.Id)">
+                <button class="flow-node @(SelectedNode.Id == node.Id ? "active" : null)" style="@NodeStyle(node)" type="button"
+                        @onclick="() => SelectNode(node.Id)">
                     <small>@node.Kind</small>
                     <strong>@node.Title</strong>
                     <span>@node.Summary</span>
@@ -77,6 +78,7 @@
 </div>
 
 @code {
+
     private IReadOnlyList<FlowTemplate> Templates { get; } =
     [
         new(
@@ -87,19 +89,19 @@
             "available",
             "$0.005 / 1k tokens",
             [
-                new("trigger", "Trigger", "Pull request opened", "GitHub PR event", "Receives a PR event from CI or an MCP tool invocation.", "agenthub.run-agents", "correlation id", "agent-run-requested", 70, 90),
-                new("policy", "Policy", "Access and scope gate", "RBAC + repo rules", "Checks caller role, repository scope, and whether PR review agent is enabled.", "agenthub.run-agents", "policy decision", "provider-routing-decision-recorded", 310, 90),
-                new("router", "Router", "Provider router", "OpenAI, GitHub Models, Ollama", "Chooses a provider from health, score, cost, and capability evidence.", "agenthub.run-agents", "routing reason", "provider-routing-decision-recorded", 550, 90),
-                new("tools", "Tools", "Code review tools", "Diff, tests, ownership", "Collects diff metadata, build status, test evidence, and affected ownership.", "agenthub.run-agents", "tool audit", "mcp-tool-invoked", 310, 275),
-                new("evaluation", "Evaluation", "Review quality gate", "Policy and hallucination checks", "Scores output against deterministic and policy evaluators before publishing.", "agenthub.view-cost-data", "evaluation result", "evaluation-case-completed", 550, 275),
-                new("notify", "Notify", "Review summary", "PR comment + dashboard", "Publishes findings, cost, and trace links to the dashboard and review channel.", "agenthub.run-agents", "trace id", "notification-requested", 790, 275)
+                new FlowNode("trigger", "Trigger", "Pull request opened", "GitHub PR event", "Receives a PR event from CI or an MCP tool invocation.", "agenthub.run-agents", "correlation id", "agent-run-requested", 40, 90),
+                new FlowNode("policy", "Policy", "Access and scope gate", "RBAC + repo rules", "Checks caller role, repository scope, and whether PR review agent is enabled.", "agenthub.run-agents", "policy decision", "provider-routing-decision-recorded", 250, 90),
+                new FlowNode("router", "Router", "Provider router", "OpenAI, GitHub Models, Ollama", "Chooses a provider from health, score, cost, and capability evidence.", "agenthub.run-agents", "routing reason", "provider-routing-decision-recorded", 460, 90),
+                new FlowNode("tools", "Tools", "Code review tools", "Diff, tests, ownership", "Collects diff metadata, build status, test evidence, and affected ownership.", "agenthub.run-agents", "tool audit", "mcp-tool-invoked", 250, 275),
+                new FlowNode("evaluation", "Evaluation", "Review quality gate", "Policy and hallucination checks", "Scores output against deterministic and policy evaluators before publishing.", "agenthub.view-cost-data", "evaluation result", "evaluation-case-completed", 460, 275),
+                new FlowNode("notify", "Notify", "Review summary", "PR comment + dashboard", "Publishes findings, cost, and trace links to the dashboard and review channel.", "agenthub.run-agents", "trace id", "notification-requested", 460, 460)
             ],
             [
-                new("trigger", "policy"),
-                new("policy", "router"),
-                new("router", "tools"),
-                new("tools", "evaluation"),
-                new("evaluation", "notify")
+                new FlowEdge("trigger", "policy"),
+                new FlowEdge("policy", "router"),
+                new FlowEdge("router", "tools"),
+                new FlowEdge("tools", "evaluation"),
+                new FlowEdge("evaluation", "notify")
             ]),
         new(
             "readiness-scanner",
@@ -109,17 +111,17 @@
             "available",
             "$0.000 deterministic",
             [
-                new("trigger", "Trigger", "Repository selected", "Manual or scheduled scan", "Starts a readiness scan for a repository.", "agenthub.run-agents", "repository id", "readiness-scan-requested", 70, 90),
-                new("checks", "Checks", "Engineering signals", "Build, tests, CI, secrets, telemetry", "Collects deterministic signals from repository structure and runtime config.", "agenthub.run-agents", "check evidence", "readiness-recommendation-recorded", 310, 90),
-                new("score", "Score", "Evidence-backed score", "Weighted readiness model", "Turns checks into a decomposable score and recommendations.", "agenthub.run-agents", "score breakdown", "readiness-recommendation-recorded", 550, 90),
-                new("history", "Persist", "Trend history", "PostgreSQL read model", "Stores score history so teams can see whether readiness improves.", "agenthub.view-cost-data", "score trend", "verification-evidence-recorded", 550, 275),
-                new("dashboard", "Dashboard", "Portfolio evidence", "Hub metric", "Displays readiness score, evidence, and recommendations in the hub.", "agenthub.view-cost-data", "dashboard card", "notification-requested", 790, 275)
+                new FlowNode("trigger", "Trigger", "Repository selected", "Manual or scheduled scan", "Starts a readiness scan for a repository.", "agenthub.run-agents", "repository id", "readiness-scan-requested", 40, 90),
+                new FlowNode("checks", "Checks", "Engineering signals", "Build, tests, CI, secrets, telemetry", "Collects deterministic signals from repository structure and runtime config.", "agenthub.run-agents", "check evidence", "readiness-recommendation-recorded", 250, 90),
+                new FlowNode("score", "Score", "Evidence-backed score", "Weighted readiness model", "Turns checks into a decomposable score and recommendations.", "agenthub.run-agents", "score breakdown", "readiness-recommendation-recorded", 460, 90),
+                new FlowNode("history", "Persist", "Trend history", "PostgreSQL read model", "Stores score history so teams can see whether readiness improves.", "agenthub.view-cost-data", "score trend", "verification-evidence-recorded", 460, 275),
+                new FlowNode("dashboard", "Dashboard", "Portfolio evidence", "Hub metric", "Displays readiness score, evidence, and recommendations in the hub.", "agenthub.view-cost-data", "dashboard card", "notification-requested", 460, 460)
             ],
             [
-                new("trigger", "checks"),
-                new("checks", "score"),
-                new("score", "history"),
-                new("history", "dashboard")
+                new FlowEdge("trigger", "checks"),
+                new FlowEdge("checks", "score"),
+                new FlowEdge("score", "history"),
+                new FlowEdge("history", "dashboard")
             ]),
         new(
             "provider-comparison",
@@ -129,17 +131,17 @@
             "experimental",
             "requires provider credentials",
             [
-                new("dataset", "Dataset", "Evaluation dataset", "Versioned cases", "Loads the controlled dataset used for provider comparison.", "agenthub.view-cost-data", "dataset version", "evaluation-run-requested", 70, 90),
-                new("providers", "Fan out", "Provider matrix", "OpenAI, GitHub Models, Ollama", "Runs the same cases across enabled providers.", "agenthub.view-cost-data", "provider list", "provider-routing-decision-recorded", 310, 90),
-                new("evaluate", "Evaluate", "Quality and policy", "Exact, tool, policy, semantic", "Scores task success, tool correctness, policy compliance, latency, and cost.", "agenthub.view-cost-data", "metric set", "evaluation-case-completed", 550, 90),
-                new("compare", "Compare", "Build-vs-buy evidence", "Trade-off report", "Compares quality, cost, reliability, complexity, lock-in, and data residency.", "agenthub.view-cost-data", "comparison", "provider-benchmark-completed", 550, 275),
-                new("gate", "Gate", "Regression policy", "CI threshold", "Blocks regressions when configured baseline policies are missed.", "agenthub.view-cost-data", "baseline verdict", "evaluation-run-completed", 790, 275)
+                new FlowNode("dataset", "Dataset", "Evaluation dataset", "Versioned cases", "Loads the controlled dataset used for provider comparison.", "agenthub.view-cost-data", "dataset version", "evaluation-run-requested", 40, 90),
+                new FlowNode("providers", "Fan out", "Provider matrix", "OpenAI, GitHub Models, Ollama", "Runs the same cases across enabled providers.", "agenthub.view-cost-data", "provider list", "provider-routing-decision-recorded", 250, 90),
+                new FlowNode("evaluate", "Evaluate", "Quality and policy", "Exact, tool, policy, semantic", "Scores task success, tool correctness, policy compliance, latency, and cost.", "agenthub.view-cost-data", "metric set", "evaluation-case-completed", 460, 90),
+                new FlowNode("compare", "Compare", "Build-vs-buy evidence", "Trade-off report", "Compares quality, cost, reliability, complexity, lock-in, and data residency.", "agenthub.view-cost-data", "comparison", "provider-benchmark-completed", 460, 275),
+                new FlowNode("gate", "Gate", "Regression policy", "CI threshold", "Blocks regressions when configured baseline policies are missed.", "agenthub.view-cost-data", "baseline verdict", "evaluation-run-completed", 460, 460)
             ],
             [
-                new("dataset", "providers"),
-                new("providers", "evaluate"),
-                new("evaluate", "compare"),
-                new("compare", "gate")
+                new FlowEdge("dataset", "providers"),
+                new FlowEdge("providers", "evaluate"),
+                new FlowEdge("evaluate", "compare"),
+                new FlowEdge("compare", "gate")
             ])
     ];
 
@@ -164,11 +166,14 @@
         SelectedNode = SelectedTemplate.Nodes.Single(node => node.Id == nodeId);
     }
 
-    private static string NodeStyle(FlowNode node) => $"left: {node.X}px; top: {node.Y}px;";
+    private static string NodeStyle(FlowNode node)
+    {
+        return $"left: {node.X}px; top: {node.Y}px;";
+    }
 
     private static string BuildEdge(FlowNode from, FlowNode to)
     {
-        var startX = from.X + 170;
+        var startX = from.X + 160;
         var startY = from.Y + 58;
         var endX = to.X;
         var endY = to.Y + 58;
@@ -199,4 +204,5 @@
         int Y);
 
     private sealed record FlowEdge(string From, string To);
+
 }

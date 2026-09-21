@@ -15,19 +15,17 @@ public sealed class Worker(
         {
             var run = agentRunService.RequestRun("readiness-scanner", "worker@agenthub.local");
             if (run.Accepted && run.Run is not null)
-            {
                 logger.LogInformation(
                     "Accepted portfolio worker run {RunId} for agent {AgentId} with provider {ProviderId}",
                     run.Run.RunId,
                     run.Run.AgentId,
                     run.Run.ProviderId);
-            }
 
             var dataset = new EvaluationDataset(
                 "portfolio-smoke",
                 "1.0.0",
                 [
-                    new(
+                    new EvaluationCase(
                         "readiness-summary",
                         "Summarize readiness",
                         "Repository has build, tests, boundaries, telemetry, and externalized secrets.",

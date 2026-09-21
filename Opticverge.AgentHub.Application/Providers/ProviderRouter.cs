@@ -1,3 +1,4 @@
+using System.Globalization;
 using Opticverge.AgentHub.Domain.Agents;
 using Opticverge.AgentHub.Domain.Providers;
 
@@ -17,10 +18,7 @@ public sealed class ProviderRouter(IProviderCatalog providerCatalog, TimeProvide
             .ThenBy(provider => provider.EstimatedCostPerThousandTokensUsd)
             .FirstOrDefault();
 
-        if (selected is null)
-        {
-            return null;
-        }
+        if (selected is null) return null;
 
         return new ProviderRoutingDecision(
             selected.Id,
@@ -30,8 +28,8 @@ public sealed class ProviderRouter(IProviderCatalog providerCatalog, TimeProvide
             new Dictionary<string, string>
             {
                 ["provider.kind"] = selected.Kind.ToString(),
-                ["provider.score"] = selected.EvaluationScore.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture),
-                ["provider.costPerThousandTokensUsd"] = selected.EstimatedCostPerThousandTokensUsd.ToString("0.#####", System.Globalization.CultureInfo.InvariantCulture)
+                ["provider.score"] = selected.EvaluationScore.ToString("0.###", CultureInfo.InvariantCulture),
+                ["provider.costPerThousandTokensUsd"] = selected.EstimatedCostPerThousandTokensUsd.ToString("0.#####", CultureInfo.InvariantCulture)
             });
     }
 }

@@ -2,6 +2,8 @@
 @using Opticverge.AgentHub.Application.Agents
 @using Opticverge.AgentHub.Application.Providers
 @using Opticverge.AgentHub.Application.Readiness
+@using Opticverge.AgentHub.Domain.Agents
+@using Opticverge.AgentHub.Domain.Providers
 @using Opticverge.AgentHub.Domain.Readiness
 @inject IAgentRegistry AgentRegistry
 @inject IProviderCatalog ProviderCatalog
@@ -13,7 +15,8 @@
     <div>
         <p class="eyebrow">Opticverge.AgentHub</p>
         <h1>AI engineering evidence</h1>
-        <p class="lede">A portfolio platform for provider-neutral agents, evaluation gates, runtime diagnostics, controlled rollout, and measurable AI readiness.</p>
+        <p class="lede">A portfolio platform for provider-neutral agents, evaluation gates, runtime diagnostics, controlled rollout, and measurable AI
+            readiness.</p>
     </div>
     <div class="score">
         <span>@Readiness.Score</span>
@@ -37,6 +40,25 @@
     <div class="metric">
         <span>@Readiness.Checks.Count(check => check.Status is ReadinessCheckStatus.Passed)</span>
         <strong>passed checks</strong>
+    </div>
+</section>
+
+<section class="operations-strip" aria-label="Operational posture">
+    <div class="ops-item">
+        <span>Delivery</span>
+        <strong>CI validation active</strong>
+    </div>
+    <div class="ops-item">
+        <span>Access</span>
+        <strong>JWT policy gated</strong>
+    </div>
+    <div class="ops-item">
+        <span>Evaluation</span>
+        <strong>Deterministic baseline</strong>
+    </div>
+    <div class="ops-item">
+        <span>Runtime</span>
+        <strong>Aspire topology scaffolded</strong>
     </div>
 </section>
 
@@ -65,7 +87,8 @@
                 <article class="row">
                     <div>
                         <strong>@provider.DisplayName</strong>
-                        <p>@provider.Kind &middot; score @provider.EvaluationScore.ToString("0.00") &middot; $@provider.EstimatedCostPerThousandTokensUsd.ToString("0.###") / 1k tokens</p>
+                        <p>@provider.Kind &middot; score @provider.EvaluationScore.ToString("0.00") &middot;
+                            $@provider.EstimatedCostPerThousandTokensUsd.ToString("0.###") / 1k tokens</p>
                     </div>
                     <span>@(provider.IsHealthy ? "healthy" : "down")</span>
                 </article>
@@ -91,9 +114,9 @@
 </section>
 
 @code {
-    private IReadOnlyList<Opticverge.AgentHub.Domain.Agents.AgentDefinition> Agents => AgentRegistry.ListAgents();
+    private IReadOnlyList<AgentDefinition> Agents => AgentRegistry.ListAgents();
 
-    private IReadOnlyList<Opticverge.AgentHub.Domain.Providers.ProviderProfile> Providers => ProviderCatalog.ListProviders();
+    private IReadOnlyList<ProviderProfile> Providers => ProviderCatalog.ListProviders();
 
-    private Opticverge.AgentHub.Domain.Readiness.ReadinessSummary Readiness => ReadinessService.SummarizeRepository("Opticverge.AgentHub");
+    private ReadinessSummary Readiness => ReadinessService.SummarizeRepository("Opticverge.AgentHub");
 }

@@ -2,15 +2,23 @@
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu />
+        <NavMenu/>
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <span>Internal AI enablement hub</span>
+        <div class="top-row">
+            <div>
+                <span class="breadcrumb">AgentHub / AI on Tap</span>
+                <strong>Internal AI enablement hub</strong>
+            </div>
+            <div class="top-actions" aria-label="Hub status">
+                <span class="status-dot"></span>
+                <span>Local portfolio mode</span>
+                <span>Policy gated</span>
+            </div>
         </div>
 
-        <article class="content px-4">
+        <article class="content">
             @Body
         </article>
     </main>
@@ -19,5 +27,5 @@
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    <span class="dismiss">x</span>
 </div>

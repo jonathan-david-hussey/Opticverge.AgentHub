@@ -2,6 +2,7 @@
 @using Opticverge.AgentHub.Application.Agents
 @using Opticverge.AgentHub.Application.Providers
 @using Opticverge.AgentHub.Domain.Agents
+@using Opticverge.AgentHub.Domain.Providers
 @inject IAgentRegistry AgentRegistry
 @inject IProviderCatalog ProviderCatalog
 
@@ -66,7 +67,8 @@
                 <article class="row">
                     <div>
                         <strong>@provider.DisplayName</strong>
-                        <p>@provider.Kind &middot; score @provider.EvaluationScore.ToString("0.00") &middot; $@provider.EstimatedCostPerThousandTokensUsd.ToString("0.###") / 1k tokens</p>
+                        <p>@provider.Kind &middot; score @provider.EvaluationScore.ToString("0.00") &middot;
+                            $@provider.EstimatedCostPerThousandTokensUsd.ToString("0.###") / 1k tokens</p>
                     </div>
                     <span>@(provider.IsHealthy ? "healthy" : "down")</span>
                 </article>
@@ -75,13 +77,14 @@
 
         <h3>Request shape</h3>
         <pre class="request-shape"><code>{
-  "agentId": "@SelectedAgent.Id",
-  "requestedBy": "&lt;authenticated-user&gt;"
-}</code></pre>
+                "agentId": "@SelectedAgent.Id",
+                "requestedBy": "&lt;authenticated-user&gt;"
+                }</code></pre>
     </article>
 </section>
 
 @code {
+
     [SupplyParameterFromQuery(Name = "selected")]
     private string? SelectedAgentId { get; set; }
 
@@ -90,7 +93,7 @@
     private AgentDefinition SelectedAgent =>
         AgentRegistry.GetAgent(SelectedAgentId ?? string.Empty) ?? RegisteredAgents[0];
 
-    private IReadOnlyList<Opticverge.AgentHub.Domain.Providers.ProviderProfile> CandidateProviders =>
+    private IReadOnlyList<ProviderProfile> CandidateProviders =>
         ProviderCatalog
             .ListProviders()
             .Where(provider => provider.Capabilities.Contains(SelectedAgent.Capability))
@@ -98,4 +101,5 @@
             .ThenByDescending(provider => provider.EvaluationScore)
             .ThenBy(provider => provider.EstimatedCostPerThousandTokensUsd)
             .ToArray();
+
 }

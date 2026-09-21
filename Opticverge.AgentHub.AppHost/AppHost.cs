@@ -1,4 +1,4 @@
-using Aspire.Hosting;
+using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -13,35 +13,35 @@ var keycloak = builder.AddKeycloak("keycloak", 8080)
     .WithDataBindMount("../infra/keycloak");
 
 var prometheus = builder.AddContainer("prometheus", "prom/prometheus", "v3.8.0")
-    .WithBindMount("../infra/prometheus", "/etc/prometheus", isReadOnly: true)
-    .WithHttpEndpoint(port: 9090, targetPort: 9090);
+    .WithBindMount("../infra/prometheus", "/etc/prometheus", true)
+    .WithHttpEndpoint(9090, 9090);
 
 var grafana = builder.AddContainer("grafana", "grafana/grafana", "13.3.0")
-    .WithBindMount("../infra/grafana", "/etc/grafana/provisioning", isReadOnly: true)
-    .WithHttpEndpoint(port: 3000, targetPort: 3000);
+    .WithBindMount("../infra/grafana", "/etc/grafana/provisioning", true)
+    .WithHttpEndpoint(3000, 3000);
 
 var otelCollector = builder.AddContainer("otelcollector", "otel/opentelemetry-collector-contrib", "0.142.0")
-    .WithBindMount("../infra/otelcollector/config.yaml", "/etc/otelcol-contrib/config.yaml", isReadOnly: true)
-    .WithHttpEndpoint(port: 4318, targetPort: 4318, name: "otlp-http");
+    .WithBindMount("../infra/otelcollector/config.yaml", "/etc/otelcol-contrib/config.yaml", true)
+    .WithHttpEndpoint(4318, 4318, "otlp-http");
 
 var kafkaUi = builder.AddContainer("kafka-ui", "provectuslabs/kafka-ui", "latest")
     .WithEnvironment("KAFKA_CLUSTERS_0_NAME", "agenthub")
     .WithEnvironment("KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS", "kafka:9092")
-    .WithHttpEndpoint(port: 8085, targetPort: 8080);
+    .WithHttpEndpoint(8085, 8080);
 
 var flagd = builder.AddContainer("flagd", "ghcr.io/open-feature/flagd", "v0.12.10")
-    .WithBindMount("../infra/flagd", "/etc/flagd", isReadOnly: true)
+    .WithBindMount("../infra/flagd", "/etc/flagd", true)
     .WithArgs("start", "--uri", "file:/etc/flagd/flags.json")
-    .WithHttpEndpoint(port: 8013, targetPort: 8013);
+    .WithHttpEndpoint(8013, 8013);
 
 var k6 = builder.AddContainer("k6", "grafana/k6", "latest")
-    .WithBindMount("../infra/k6", "/scripts", isReadOnly: true)
+    .WithBindMount("../infra/k6", "/scripts", true)
     .WithArgs("run", "/scripts/api-smoke.js");
 
 var mcpInspector = builder.AddContainer("mcp-inspector", "ghcr.io/modelcontextprotocol/inspector", "latest")
-    .WithHttpEndpoint(port: 6274, targetPort: 6274);
+    .WithHttpEndpoint(6274, 6274);
 
-var api = builder.AddProject<Projects.Opticverge_AgentHub_Api>("api")
+var api = builder.AddProject<Opticverge_AgentHub_Api>("api")
     .WithReference(postgres)
     .WithReference(kafka)
     .WithReference(cache)
@@ -52,13 +52,13 @@ var api = builder.AddProject<Projects.Opticverge_AgentHub_Api>("api")
     .WaitFor(cache)
     .WaitFor(keycloak);
 
-var mcp = builder.AddProject<Projects.Opticverge_AgentHub_Mcp>("mcp")
+var mcp = builder.AddProject<Opticverge_AgentHub_Mcp>("mcp")
     .WithReference(cache)
     .WithReference(seq)
     .WithReference(keycloak)
     .WaitFor(keycloak);
 
-builder.AddProject<Projects.Opticverge_AgentHub_Worker>("worker")
+builder.AddProject<Opticverge_AgentHub_Worker>("worker")
     .WithReference(postgres)
     .WithReference(kafka)
     .WithReference(cache)
@@ -66,7 +66,7 @@ builder.AddProject<Projects.Opticverge_AgentHub_Worker>("worker")
     .WaitFor(kafka)
     .WaitFor(cache);
 
-builder.AddProject<Projects.Opticverge_AgentHub_Web>("web")
+builder.AddProject<Opticverge_AgentHub_Web>("web")
     .WithReference(api)
     .WithReference(mcp)
     .WithReference(cache)

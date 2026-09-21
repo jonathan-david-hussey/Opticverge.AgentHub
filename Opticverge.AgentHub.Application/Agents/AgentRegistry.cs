@@ -37,8 +37,13 @@ public sealed class AgentRegistry : IAgentRegistry
             [AgentHubPolicies.ReplayEvents])
     ];
 
-    public IReadOnlyList<AgentDefinition> ListAgents() => Agents;
+    public IReadOnlyList<AgentDefinition> ListAgents()
+    {
+        return Agents;
+    }
 
-    public AgentDefinition? GetAgent(string agentId) =>
-        Agents.FirstOrDefault(agent => string.Equals(agent.Id, agentId, StringComparison.OrdinalIgnoreCase));
+    public AgentDefinition? GetAgent(string agentId)
+    {
+        return Agents.FirstOrDefault(agent => string.Equals(agent.Id, agentId, StringComparison.OrdinalIgnoreCase));
+    }
 }
